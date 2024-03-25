@@ -1,27 +1,35 @@
 <?php
 
 /**
- * APC CacheResource
+ * Memcache CacheResource
  * CacheResource Implementation based on the KeyValueStore API to use
  * memcache as the storage resource for Smarty's output caching.
- * *
+ * Note that memcache has a limitation of 256 characters per cache-key.
+ * To avoid complications all cache-keys are translated to a sha1 hash.
  *
  * @package CacheResource-examples
- * @author  Uwe Tews
+ * @author  Rodney Rehm
  */
-class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
+class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore
 {
     /**
-     * Smarty_CacheResource_Apc constructor.
+     * memcache instance
      *
-     * @throws \Exception
+     * @var Memcache
+     */
+    protected $memcache = null;
+
+    /**
+     * Smarty_CacheResource_Memcache constructor.
      */
     public function __construct()
     {
-        // test if APC is present
-        if (!function_exists('apc_cache_info')) {
-            throw new Exception('APC Template Caching Error: APC is not installed');
+        if (class_exists('Memcached')) {
+            $this->memcache = new Memcached();
+        } else {
+            $this->memcache = new Memcache();
         }
+        $this->memcache->addServer('127.0.0.1', 11211);
     }
 
     /**
@@ -34,12 +42,12 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
      */
     protected function read(array $keys)
     {
-        $_res = array();
-        $res = apc_fetch($keys);
-        foreach ($res as $k => $v) {
-            $_res[ $k ] = $v;
+        $res = array();
+        foreach ($keys as $key) {
+            $k = sha1($key);
+            $res[$key] = $this->memcache->get($k);
         }
-        return $_res;
+        return $res;
     }
 
     /**
@@ -53,7 +61,12 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
     protected function write(array $keys, $expire = null)
     {
         foreach ($keys as $k => $v) {
-            apc_store($k, $v, $expire);
+            $k = sha1($k);
+            if (class_exists('Memcached')) {
+                $this->memcache->set($k, $v, $expire);
+            } else {
+                $this->memcache->set($k, $v, 0, $expire);
+            }
         }
         return true;
     }
@@ -68,7 +81,8 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
     protected function delete(array $keys)
     {
         foreach ($keys as $k) {
-            apc_delete($k);
+            $k = sha1($k);
+            $this->memcache->delete($k);
         }
         return true;
     }
@@ -80,6 +94,6 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
      */
     protected function purge()
     {
-        return apc_clear_cache('user');
+        return $this->memcache->flush();
     }
 }
