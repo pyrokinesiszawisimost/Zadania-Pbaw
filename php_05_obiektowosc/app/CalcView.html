@@ -1,29 +1,27 @@
-{extends file=$conf->root_path|cat:"/templates/main.html"}
+{extends file="../templates/main.html"}
 
 {block name=footer}przykładowa tresć stopki wpisana do szablonu głównego z szablonu kalkulatora{/block}
 
 {block name=content}
 
-<h2 class="content-head is-center">Kalkulator kredytowy</h2>
+<h3>Prosty kalkulator</h2>
 
-<div class="pure-g">
-<div class="l-box-lrg pure-u-1 pure-u-med-2-5">
-	<form class="pure-form pure-form-stacked" action="{$conf->app_url}/app/calc.php" method="post">
-		<fieldset>
 
-			<label for="kredyt">Kredyt</label>
-			<input id="kredyt" type="text" placeholder="wartość kredyta" name="kredyt" value="{$form->kredyt}">
-			<label for="okr_kr">Iloćś lat</label>
-			<input id="okr_kr" type="text" placeholder="ilość lat" name="okr_kr" value="{$form->okr_kr}">
-			<label for="opr">Oprocentowanie</label>
-			<input id="opr" type="text" placeholder="oprocentowanie" name="opr" value="{$form->opr}">
+<form class="pure-form pure-form-stacked" action="{$conf->app_url}/app/calc.php" method="post">
+	<fieldset>
+		<label for="kredyt">Kredyt</label>
+		<input id="kredyt" type="text" placeholder="wartość kredyta" name="kredyt" value="{$form->kredyt}">
+		<label for="okr_kr">Okres lat</label>
+		<input id="okr_kr" type="text" placeholder="ilość lat" name="okr_kr" value="{$form->okr_kr}">
+                <label for="opr">Oprocentowanie</label>
+		<input id="opr" type="text" placeholder="oprocentowanie" name="opr" value="{$form->opr}">
+	</fieldset>
+	<button type="submit" class="pure-button pure-button-primary">Oblicz</button>
+</form>
 
-			<button type="submit" class="pure-button">Oblicz</button>
-		</fieldset>
-	</form>
-</div>
 
-<div class="l-box-lrg pure-u-1 pure-u-med-3-5">
+
+<div class="messages">
 
 {* wyświeltenie listy błędów, jeśli istnieją *}
 {if $msgs->isError()}
@@ -56,7 +54,6 @@
 	</p>
 {/if}
 
-</div>
 </div>
 
 {/block}
