@@ -6,7 +6,7 @@ class Messages {
 
 	public function addError($message) {
 		$this->errors[] = $message;
-		$this->num ++;
+		$this->num++;
 	}
 
 	public function addInfo($message) {
